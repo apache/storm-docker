@@ -28,8 +28,7 @@ RUN set -eux; \
 # Verify that gosu binary works
     gosu nobody true
 
-ARG GPG_KEY=51379DA8A7AE5B02674EF15C134716AF768D9B6E
-ARG DISTRO_NAME=apache-storm-2.5.0
+ARG DISTRO_NAME=apache-storm-2.6.0
 
 # Download Apache Storm, verify its PGP signature, untar and clean up
 RUN set -eux; \
@@ -54,12 +53,13 @@ RUN set -eux; \
     ddist "$DISTRO_NAME.tar.gz" "storm/$DISTRO_NAME/$DISTRO_NAME.tar.gz"; \
     ddist "$DISTRO_NAME.tar.gz.asc" "storm/$DISTRO_NAME/$DISTRO_NAME.tar.gz.asc"; \
     export GNUPGHOME="$(mktemp -d)"; \
-    gpg --keyserver hkps://keyserver.pgp.com --recv-key "$GPG_KEY" || \
-    gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys "$GPG_KEY" || \
-    gpg --keyserver hkps://pgp.mit.edu --recv-keys "$GPG_KEY"; \
+    # Download the KEYS file from the authoritative source, which is the ASF distribution webserver.
+    # Don't rely on a single key only. Every release manager could have signed that release.
+    curl -s -O https://dist.apache.org/repos/dist/release/storm/KEYS; \
+    gpg --import KEYS; \
     gpg --batch --verify "$DISTRO_NAME.tar.gz.asc" "$DISTRO_NAME.tar.gz"; \
     tar -xzf "$DISTRO_NAME.tar.gz"; \
-    rm -rf "$GNUPGHOME" "$DISTRO_NAME.tar.gz" "$DISTRO_NAME.tar.gz.asc"; \
+    rm -rf "$GNUPGHOME" "$DISTRO_NAME.tar.gz" "$DISTRO_NAME.tar.gz.asc" "KEYS"; \
     chown -R storm:storm "$DISTRO_NAME"
 
 WORKDIR $DISTRO_NAME
