@@ -69,9 +69,10 @@ RUN set -eux; \
       # Richard Zowalla (Code Signing Key) <rzo1@apache.org>
       B83D15E72253ED1104EB4FBBDAB472F0E5B8A431 \
       ; do \
-        gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key" || \
+        gpg --batch --keyserver hkps://keyserver.ubuntu.com --recv-keys "$key" || \
         gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
-        gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
+        gpg --batch --keyserver hkps://pgp.mit.edu --recv-keys "$key" || \
+        gpg --batch --keyserver hkps://keyserver.pgp.com --recv-keys "$key" ; \
       done; \
     }; \
     ddist "$DISTRO_NAME.tar.gz" "storm/$DISTRO_NAME/$DISTRO_NAME.tar.gz"; \
