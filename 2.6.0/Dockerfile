@@ -30,6 +30,7 @@ RUN set -eux; \
 
 ARG DISTRO_NAME=apache-storm-2.6.0
 
+
 # Download Apache Storm, verify its PGP signature, untar and clean up
 RUN set -eux; \
     ddist() { \
@@ -50,16 +51,36 @@ RUN set -eux; \
         done; \
         [ -n "$success" ]; \
     }; \
+    # Generated via automation/create-key-section.sh
+    importKeys() { \
+      for key in \
+      # Meng Li (Ethan Li CODE SIGNING KEY) <ethanli@apache.org>
+      5167DE337E7370373499FC1DA4A672F11B5050C8 \
+      # Kishorkumar Vasantrao Patil (CODE SIGNING KEY) <kishorvpatil@apache.org>
+      32C8C0BEE3D01AF46B6E24B0AC30BFA8FEF0711F \
+      # Govind Rajagopal Menon (Release Signing Key) <govind@apache.org>
+      79B03D059E628478FC9F1D8B152CAD0C46E87B61 \
+      # Bipin Prasad (For Signing Apache Storm release) <bipinprasad@apache.org>
+      51379DA8A7AE5B02674EF15C134716AF768D9B6E \
+      # Aaron Gresch <agresch@apache.org>
+      DA903F2CF9BBD42EAECFA9E45EA6FAEF09A4474D \
+      # Kishor Patil (The keys for signing Storm releases) <kishorvpatil@apache.org>
+      6156BAC0C21A1991CF1B690AB2973D6F4A67943A \
+      # Richard Zowalla (Code Signing Key) <rzo1@apache.org>
+      B83D15E72253ED1104EB4FBBDAB472F0E5B8A431 \
+      ; do \
+        gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key" || \
+        gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
+        gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
+      done; \
+    }; \
     ddist "$DISTRO_NAME.tar.gz" "storm/$DISTRO_NAME/$DISTRO_NAME.tar.gz"; \
     ddist "$DISTRO_NAME.tar.gz.asc" "storm/$DISTRO_NAME/$DISTRO_NAME.tar.gz.asc"; \
     export GNUPGHOME="$(mktemp -d)"; \
-    # Download the KEYS file from the authoritative source, which is the ASF distribution webserver.
-    # Don't rely on a single key only. Every release manager could have signed that release.
-    curl -s -O https://dist.apache.org/repos/dist/release/storm/KEYS; \
-    gpg --import KEYS; \
+    importKeys; \
     gpg --batch --verify "$DISTRO_NAME.tar.gz.asc" "$DISTRO_NAME.tar.gz"; \
     tar -xzf "$DISTRO_NAME.tar.gz"; \
-    rm -rf "$GNUPGHOME" "$DISTRO_NAME.tar.gz" "$DISTRO_NAME.tar.gz.asc" "KEYS"; \
+    rm -rf "$GNUPGHOME" "$DISTRO_NAME.tar.gz" "$DISTRO_NAME.tar.gz.asc"; \
     chown -R storm:storm "$DISTRO_NAME"
 
 WORKDIR $DISTRO_NAME
