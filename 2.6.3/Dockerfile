@@ -4,6 +4,10 @@ ENV STORM_CONF_DIR=/conf \
     STORM_DATA_DIR=/data \
     STORM_LOG_DIR=/logs
 
+# Remove the default user 'ubuntu' and its group
+RUN userdel -r ubuntu && \
+    groupdel ubuntu || true \
+
 # Add a user with an explicit UID/GID and create necessary directories
 RUN set -eux; \
     groupadd -r storm --gid=1000; \
