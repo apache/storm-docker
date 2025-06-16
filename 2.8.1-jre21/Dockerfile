@@ -33,7 +33,7 @@ RUN set -eux; \
 # Verify that gosu binary works
     gosu nobody true
 
-ARG DISTRO_NAME=apache-storm-2.8.0
+ARG DISTRO_NAME=apache-storm-2.8.1
 
 
 # Download Apache Storm, verify its PGP signature, untar and clean up
